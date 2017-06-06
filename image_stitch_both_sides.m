@@ -5,7 +5,8 @@ clear all;
 %% The below code compares the value of two images and matches the pattern
 % to another one. Using the shift in the same  pattern, we can determine
 % the position of foloowing image patches
-
+% Set the parameters for directory and No. of Images
+% 
 KE = 200;
 a = 1;  %von x Anfang  (von links aus betrachtet!)
 b = 100;  %von y Anfang  (von oben aus betrachtet!)
@@ -18,12 +19,12 @@ Bilder_Vorgeben=true;
 % Bilder_Vorgeben=false;
 if Bilder_Vorgeben==true
 Startbild = 1;  % Set this parameter as per No. of Images in directory
-Endbild= 28;
+Endbild= 51;
 end
 fontSize = 16;
 
 %% Directory Settings
-directory = 'D:\Germany\Studies\HiWi\TTD\Image_Stitch';
+directory = 'D:\Germany\Studies\HiWi\TTD\Image_Stitch\R_L';
 
 % Erstellen einer Liste der Dateinamen
 Names = dir(fullfile(directory,'*.bmp'));
@@ -294,25 +295,25 @@ for range = Startbild:XX:Endbild
 end
 
 [~,DateiVorname,~] = fileparts(filename);
-SpeichernName = strcat(O_Cropped,'\',strcat(DateiVorname, '_cropped_part.bmp'));
+SpeichernName = strcat(O_Cropped,'\', '_final_stitch.bmp');
 imwrite(stitched_image,SpeichernName);
-yy=zeros(2,width_covered);
-
-
-for xx=1:width_covered
-    y_flag=0;
-    for y_sweep=1:2*y_height
-        if((stitched_image(y_sweep, xx) == 1) && y_flag==0)  % Check for the white part
-            yy(1,xx)=y_sweep;
-            y_flag=1;
-        end
-    end
-    y_flag=0;
-    for y_sweep=2*y_height:-1:1
-        if((stitched_image(y_sweep, xx) == 1) && y_flag==0)  % Check for the white part
-            yy(2,xx)=y_sweep;
-            y_flag=1;
-        end
-    end
-end
+% yy=zeros(2,width_covered);
+% 
+% 
+% for xx=1:width_covered
+%     y_flag=0;
+%     for y_sweep=1:2*y_height
+%         if((stitched_image(y_sweep, xx) == 1) && y_flag==0)  % Check for the white part
+%             yy(1,xx)=y_sweep;
+%             y_flag=1;
+%         end
+%     end
+%     y_flag=0;
+%     for y_sweep=2*y_height:-1:1
+%         if((stitched_image(y_sweep, xx) == 1) && y_flag==0)  % Check for the white part
+%             yy(2,xx)=y_sweep;
+%             y_flag=1;
+%         end
+%     end
+% end
     
