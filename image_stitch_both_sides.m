@@ -143,7 +143,7 @@ if isempty(Names)                                          % Falls directory kei
     error('Der directory enthält keine Datei im png-Format.') % Fehlerausschrift anzeigen
 end
 
-region_dimensions = zeros(length(Names)-1, 1, 4);
+region_dimensions = zeros(Endbild - Startbild, 1, 4);
 
 %% 
 total_width = width;
@@ -151,8 +151,8 @@ total_width = width;
     y_begin = y_init; %Position des ausgewählten Rechtecks in Y
     y_height = height; %Höhe des ausgewählten Rechtecks
 ii=1;
-vx=zeros(1,length(Names)-1);
-for range = 1 : length(Names)-1
+vx=zeros(1,Endbild-1);
+for range = Startbild : Endbild-1
     filename = strcat(directory_fil,'\', Names(range).name);
     reference_image = imread(filename);
     reference_image = imcrop(reference_image, ref_dimensions);%Bild1 wird zugeschnitten
@@ -179,6 +179,7 @@ for range = 1 : length(Names)-1
    
 %     x_begin = x_init;
     if xoffSet > x_init
+        x_begin = x_init;
         x_width = xoffSet-x_init; %Benötigte Bildbreite wird berechnet aus dem Offset-Startwert
         right_flag = 1;           % This indicates the flow is from left to right
     else
@@ -194,21 +195,21 @@ for range = 1 : length(Names)-1
     region_dimensions(range,:,:) = [x_begin,y_begin,x_width-1,y_height];
     [Pfad,DateiVorname,Erweiterung] = fileparts(filename);
     SpeichernName = strcat(O_Cropped,'\',strcat(DateiVorname, '_refarea.png'));
-    imwrite(imcrop(test_image, [x_begin,0,width-1,y_height]),SpeichernName);
+    imwrite(imcrop(test_image, [x_begin,1,x_width-1,y_height-1]),SpeichernName);
 end
 
 %% Read the Cropped filtered Images and join them using the top edge
 
 directory_crop = strcat(directory, '\Ergebnisse\Cropped');
 % Erstellen einer Liste der Dateinamen
-Names = dir(fullfile(directory_crop,'*.png'));
+Names = dir(fullfile(O_Cropped,'*.png'));
 if isempty(Names)                                          % Falls directory keine bmp- Datei enthält:
     error('Der directory enthält keine Datei im png-Format.') % Fehlerausschrift anzeigen
 end
 
 total_width =0;
-for range = 1 : length(Names)
-    filename = strcat(directory_crop,'\', Names(range).name);
+for range = Startbild : Endbild
+    filename = strcat(O_Cropped,'\', Names(range).name);
     reference_image = imread(filename);
     [y, x] = size(reference_image);
     total_width = total_width + x;
@@ -219,21 +220,21 @@ stitched_image = false( 3*y_height, total_width); % Das leere Bild wird erstellt
 width_covered=0;
 y_shift_total = 0;
 if right_flag == 0
-    Startbild = 1;
-    Endbild = length(Names);
+    Startbild_1 = Startbild;
+    Endbild_1 = Endbild;
     XX = 1;
 else 
-    Startbild = length(Names);
-    Endbild = 1;
+    Startbild_1 = Endbild;
+    Endbild_1 = Startbild;
     XX = -1;
 end
 
-for range = Startbild:XX:Endbild
+for range = Startbild_1:XX:Endbild_1
     % Read the Last Image as the start image
-    filename = strcat(directory_crop,'\', Names(range).name);
+    filename = strcat(O_Cropped,'\', Names(range).name);
     reference_image = imread(filename);
     [y1, x1] = size(reference_image);
-    if(range == Startbild) %Das Letzte Bild wird nach vorne eingesetzt
+    if(range == Startbild_1) %Das Letzte Bild wird nach vorne eingesetzt
         for x_sweep = 1:x1
             yy=0;
                 for y_sweep = ceil((2*y_height-y1)/2):floor((2*y_height+y1)/2)-1
@@ -243,7 +244,7 @@ for range = Startbild:XX:Endbild
         end
         width_covered = width_covered + x1;
     end
-    if range<length(Names)
+    %if range<Endbild_1
     %Sobald weitere Bilder eingelesen werden
     
     y_right_flag = 0;
@@ -295,7 +296,7 @@ for range = Startbild:XX:Endbild
 end
 
 [~,DateiVorname,~] = fileparts(filename);
-SpeichernName = strcat(O_Cropped,'\', '_final_stitch.bmp');
+SpeichernName = strcat(O_Plots,'\', '_final_stitch.bmp');
 imwrite(stitched_image,SpeichernName);
 % yy=zeros(2,width_covered);
 % 
