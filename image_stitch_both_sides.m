@@ -19,7 +19,7 @@ Bilder_Vorgeben=true;
 % Bilder_Vorgeben=false;
 if Bilder_Vorgeben==true
 Startbild = 1;  % Set this parameter as per No. of Images in directory
-Endbild= 51;
+Endbild= 28;
 end
 fontSize = 16;
 
@@ -293,7 +293,7 @@ for range = Startbild_1:XX:Endbild_1
     width_covered = width_covered + x1-(StartPiRow-1)-EndPiRow;
     end
     
-end
+
 
 [~,DateiVorname,~] = fileparts(filename);
 SpeichernName = strcat(O_Plots,'\', '_final_stitch.bmp');
