@@ -20,16 +20,16 @@ close all;
 
 KE = 200;
 a = 1;  %von x Anfang  (von links aus betrachtet!)
-b = 300;  %von y Anfang  (von oben aus betrachtet!)
-c = 1280;  %Breite        (Breite des Bildes)
-d = 700;  %Höhe          (Höhe des Bildes)
+b = 100;  %von y Anfang  (von oben aus betrachtet!)
+c = 1328;  %Breite        (Breite des Bildes)
+d = 400;  %Höhe          (Höhe des Bildes)
 
 crop_area = [a b c d];
 
 fontSize = 16;
 
 %% Directory Settings
-directory = 'D:\Germany\Studies\HiWi\TTD\Image_Stitch\R_L';
+directory = 'D:\Germany\Studies\HiWi\TTD\Image_Stitch\HighSpeed\ld133';
 
 % Erstellen einer Liste der Dateinamen
 Names = dir(fullfile(directory,'*.bmp'));
@@ -99,7 +99,7 @@ imshow(input);
 crop_area(2) = y_init;
 crop_area(4) = height;
 %Take a new image and compare them
-filename = strcat(directory,'\', Names(2).name);
+filename = strcat(directory,'\', Names(21).name);
 Test_image = imread(filename);
 subplot(2,1,2)
 imshow(Test_image);

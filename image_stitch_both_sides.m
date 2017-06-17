@@ -6,22 +6,27 @@ clear all;
 % to another one. Using the shift in the same  pattern, we can determine
 % the position of foloowing image patches
 % Set the parameters for directory and No. of Images
-% 
+%
 KE = 200;
 a = 1;  %von x Anfang  (von links aus betrachtet!)
-b = 100;  %von y Anfang  (von oben aus betrachtet!)
-c = 1696;  %Breite        (Breite des Bildes)
-d = 500;  %Höhe          (Höhe des Bildes)
-
+b = 80;  %von y Anfang  (von oben aus betrachtet!)
+c = 1328;  %Breite        (Breite des Bildes)
+d = 440;  %Höhe          (Höhe des Bildes)
+p = 0.1;
 crop_area = [a b c d];
 Startbild = 1;
 Bilder_Vorgeben=true;
 % Bilder_Vorgeben=false;
 if Bilder_Vorgeben==true
-Startbild = 1;  % Set this parameter as per No. of Images in directory
-Endbild= 28;
+    Startbild = 1;  % Set this parameter as per No. of Images in directory
+    Endbild= 50;
 end
 fontSize = 16;
+
+%% Referenzbild
+
+blank=imread('D:\Germany\Studies\HiWi\TTD\Image_Stitch\HighSpeed\ld133\Blank.bmp');
+blank=imcrop(blank, crop_area);
 
 %% Directory Settings
 directory = 'D:\Germany\Studies\HiWi\TTD\Image_Stitch\R_L';
@@ -40,41 +45,41 @@ if ~exist(O_Ergebnisse,'dir');      % überprüfen, ob Unterdirectory existiert; w
     mkdir(O_Ergebnisse);            % Unterdirectory erstellen
 end
 
-% Bilder 
+% Bilder
 O_Bilder = strcat(directory, '\Ergebnisse\Bilder');
-if ~exist(O_Bilder,'dir');      
-    mkdir(O_Bilder);  
+if ~exist(O_Bilder,'dir');
+    mkdir(O_Bilder);
 end
 
-% Cropped 
+% Cropped
 O_Filtered = strcat(directory, '\Ergebnisse\Filtered');
-if ~exist(O_Filtered,'dir');      
-    mkdir(O_Filtered);  
+if ~exist(O_Filtered,'dir');
+    mkdir(O_Filtered);
 end
 
-% Cropped 
+% Cropped
 O_Cropped = strcat(directory, '\Ergebnisse\Cropped');
-if ~exist(O_Cropped,'dir');      
-    mkdir(O_Cropped);  
+if ~exist(O_Cropped,'dir');
+    mkdir(O_Cropped);
 end
 
-% Daten 
+% Daten
 O_Daten = strcat(directory, '\Ergebnisse\Daten');
-if ~exist(O_Daten,'dir');      
-    mkdir(O_Daten);   
+if ~exist(O_Daten,'dir');
+    mkdir(O_Daten);
 end
 
-% Plots 
+% Plots
 O_Plots = strcat(directory, '\Ergebnisse\Plots');
-if ~exist(O_Plots,'dir')      
-    mkdir(O_Plots);   
+if ~exist(O_Plots,'dir')
+    mkdir(O_Plots);
 end
 
 %% Save all the images in directory as Intensity Images so that we can later you them for joining and filtering
 %% Directory Settings
 if Bilder_Vorgeben==false
-Startbild=1;
-Endbild=length(Names);
+    Startbild=1;
+    Endbild=length(Names);
 end
 
 for range = Startbild:Endbild
@@ -83,8 +88,8 @@ for range = Startbild:Endbild
     input = imread(filename);
     % Crop the image for Flow
     cropped = imcrop(input, crop_area);
-    cropped_filtered = image_filtering_JR(cropped);
-%       cropped_filtered = image_filtering_final(cropped);
+    cropped_filtered = image_filtering_JR(cropped, blank, p);
+    %       cropped_filtered = image_filtering_final(cropped);
     % Display the name of the reference image
     [Pfad,DateiVorname,Erweiterung] = fileparts(filename);
     disp(['Aktuelles Bild : ', filename]);
@@ -125,14 +130,16 @@ Ref_Area = cropped1(y_init:y_init+height-1, x_init:x_init+width-1);
 figure, imshow(Ref_Area);
 % The below image matrix can be used for final image stitching
 % Ref_Area = image_filtering_final(Ref_Area);
-Ref_Area = image_filtering_JR(Ref_Area);
+%blank1 = imcrop(blank, crop_area);
+blank1 = blank(y_init:y_init+height-1, x_init:x_init+width-1);
+Ref_Area = image_filtering_JR(Ref_Area,blank1,p);
 SpeichernName = strcat(O_Cropped,'\',strcat(DateiVorname, '_refarea.png'));
 imwrite(Ref_Area,SpeichernName);
 
 ref_dimensions = [x_init y_init width-1 height-1];
 test_dimensions= [0 y_init c height-1];
 
-%% The below loop continuously takes 2 images and compares them for same parts 
+%% The below loop continuously takes 2 images and compares them for same parts
 % This helps to identify the correct region in each image
 
 directory_fil = strcat(directory, '\Ergebnisse\Filtered');
@@ -145,18 +152,20 @@ end
 
 region_dimensions = zeros(Endbild - Startbild, 1, 4);
 
-%% 
+%%
 total_width = width;
-    x_begin = x_init; %Position des ausgewählten Rechtecks in X
-    y_begin = y_init; %Position des ausgewählten Rechtecks in Y
-    y_height = height; %Höhe des ausgewählten Rechtecks
+x_begin = x_init; %Position des ausgewählten Rechtecks in X
+y_begin = y_init; %Position des ausgewählten Rechtecks in Y
+y_height = height; %Höhe des ausgewählten Rechtecks
 ii=1;
 vx=zeros(1,Endbild-1);
+Startbild = 1;  % Set this parameter as per No. of Images in directory
+Endbild= 200;
 for range = Startbild : Endbild-1
     filename = strcat(directory_fil,'\', Names(range).name);
     reference_image = imread(filename);
     reference_image = imcrop(reference_image, ref_dimensions);%Bild1 wird zugeschnitten
-       
+    
     filename = strcat(directory_fil,'\', Names(range+1).name);
     test_image = imread(filename);
     test_image = imcrop(test_image, test_dimensions);
@@ -164,20 +173,20 @@ for range = Startbild : Endbild-1
     corr_coef = normxcorr2(reference_image, test_image); %Correlation zwischen Bild1-Zuschnitt und Bild2
     
     [ypeak, xpeak] = find(corr_coef ==max(corr_coef(:))); %Die maximale Übereinstimmung wird verwendet
-%     yoffSet = ypeak-size(Ref_Area,1);
-%     xoffSet = xpeak-size(Ref_Area,2);
+    %     yoffSet = ypeak-size(Ref_Area,1);
+    %     xoffSet = xpeak-size(Ref_Area,2);
     [y,x] = size(ypeak);
-    if (y+x) == 2 
+    if (y+x) == 2
         yoffSet = ypeak-size(Ref_Area,1);
         xoffSet = xpeak-size(Ref_Area,2);
-    else 
+    else
         yoffSet = ypeak(1)-size(Ref_Area,1);
         xoffSet = xpeak(1)-size(Ref_Area,2);
     end
-%     vx(ii)=xoffSet;
-%     vy(ii)=yoffSet;
-   
-%     x_begin = x_init;
+    %     vx(ii)=xoffSet;
+    %     vy(ii)=yoffSet;
+    
+    %     x_begin = x_init;
     if xoffSet > x_init
         x_begin = x_init;
         x_width = xoffSet-x_init; %Benötigte Bildbreite wird berechnet aus dem Offset-Startwert
@@ -187,11 +196,11 @@ for range = Startbild : Endbild-1
         x_begin = xoffSet+width;
         right_flag = 0;           % This indicates the flow is from right to left
     end
-       
+    
     vx(ii)=x_width;
     vy(ii)=yoffSet-y_init;
-     ii=ii+1;
-   total_width = x_width + total_width;
+    ii=ii+1;
+    total_width = x_width + total_width;
     region_dimensions(range,:,:) = [x_begin,y_begin,x_width-1,y_height];
     [Pfad,DateiVorname,Erweiterung] = fileparts(filename);
     SpeichernName = strcat(O_Cropped,'\',strcat(DateiVorname, '_refarea.png'));
@@ -223,7 +232,7 @@ if right_flag == 0
     Startbild_1 = Startbild;
     Endbild_1 = Endbild;
     XX = 1;
-else 
+else
     Startbild_1 = Endbild;
     Endbild_1 = Startbild;
     XX = -1;
@@ -237,10 +246,10 @@ for range = Startbild_1:XX:Endbild_1
     if(range == Startbild_1) %Das Letzte Bild wird nach vorne eingesetzt
         for x_sweep = 1:x1
             yy=0;
-                for y_sweep = ceil((2*y_height-y1)/2):floor((2*y_height+y1)/2)-1
-                    yy=yy+1;
-                    stitched_image( y_sweep, width_covered + x_sweep) = reference_image(yy, x_sweep);
-                end
+            for y_sweep = ceil((2*y_height-y1)/2):floor((2*y_height+y1)/2)-1
+                yy=yy+1;
+                stitched_image( y_sweep, width_covered + x_sweep) = reference_image(yy, x_sweep);
+            end
         end
         width_covered = width_covered + x1;
     end
@@ -252,55 +261,55 @@ for range = Startbild_1:XX:Endbild_1
     StartPiRow=0;
     % Detect the white line of next image
     while y_right_flag==0
-    StartPiRow=StartPiRow+1;
-    for y_sweep = 1:y1
-        if((reference_image(y_sweep, StartPiRow) == 1) && y_right_flag == 0) % Check for the white part
-            y_right = y_sweep;
-            y_right_flag = 1;
+        StartPiRow=StartPiRow+1;
+        for y_sweep = 1:y1
+            if((reference_image(y_sweep, StartPiRow) == 1) && y_right_flag == 0) % Check for the white part
+                y_right = y_sweep;
+                y_right_flag = 1;
+            end
         end
+        
     end
-       
-    end
-
+    
     y_left_flag = 0;
     count = 0;
     EndPiRow=0;
     while y_left_flag==0 %Falls letztes Pixel nicht weiß
-    
-    % Detect the white line
-    for y_sweep = 1:3*y_height
-        if((stitched_image(y_sweep, width_covered-EndPiRow) == 1) && y_left_flag == 0) % Check for the white part
-            y_left = y_sweep;
-            y_left_flag = 1;
+        
+        % Detect the white line
+        for y_sweep = 1:3*y_height
+            if((stitched_image(y_sweep, width_covered-EndPiRow) == 1) && y_left_flag == 0) % Check for the white part
+                y_left = y_sweep;
+                y_left_flag = 1;
+            end
+            
         end
-
+        EndPiRow=EndPiRow+1;
     end
-    EndPiRow=EndPiRow+1;
-    end
-%Bis jetzt wurde die weiße Linie im offenen Ende des Stitched Image
-%gefunden und im linken Teil des dazukommenden Bildes
+    %Bis jetzt wurde die weiße Linie im offenen Ende des Stitched Image
+    %gefunden und im linken Teil des dazukommenden Bildes
     y_shift =y_left - y_right;
     
     y_shift_total = y_shift;
-
+    
     for x_sweep = StartPiRow:x1
-            for y_sweep = 1:y1
-                if(y_sweep+y_shift_total >=1 && y_sweep+y_shift_total <= 3*y1)
-                    stitched_image( y_sweep+y_shift_total, width_covered + x_sweep) = reference_image(y_sweep, x_sweep);
-                end
+        for y_sweep = 1:y1
+            if(y_sweep+y_shift_total >=1 && y_sweep+y_shift_total <= 3*y1)
+                stitched_image( y_sweep+y_shift_total, width_covered + x_sweep) = reference_image(y_sweep, x_sweep);
             end
+        end
     end
     width_covered = width_covered + x1-(StartPiRow-1)-EndPiRow;
-    end
-    
+end
+
 
 
 [~,DateiVorname,~] = fileparts(filename);
 SpeichernName = strcat(O_Plots,'\', '_final_stitch.bmp');
 imwrite(stitched_image,SpeichernName);
 % yy=zeros(2,width_covered);
-% 
-% 
+%
+%
 % for xx=1:width_covered
 %     y_flag=0;
 %     for y_sweep=1:2*y_height
@@ -317,4 +326,4 @@ imwrite(stitched_image,SpeichernName);
 %         end
 %     end
 % end
-    
+
