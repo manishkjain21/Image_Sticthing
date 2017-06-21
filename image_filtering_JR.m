@@ -19,7 +19,7 @@ C=uint8(C);
 C=imadjust(C);
 [J,noise] = wiener2(C,[5 5]);
 J = wiener2(C,[5 5],noise);
-imshowpair(J,C,'montage')
+%imshowpair(J,C,'montage');
 
 %J=A;
 %%
